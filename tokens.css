@@ -1,0 +1,16 @@
+:root {
+  --phosphor-bg: #060604;
+  --phosphor-fg: #ffc94a;
+  --phosphor-fg-dim: #8a6f35;
+  --phosphor-border: #4a3b1c;
+
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-voice: "Fraunces", Georgia, serif;
+}
+
+body {
+  background: var(--phosphor-bg);
+  color: var(--phosphor-fg);
+  font-family: var(--font-sans);
+}

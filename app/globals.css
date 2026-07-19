@@ -1,0 +1,1332 @@
+:root {
+  --phosphor-bg: #121212;
+  --phosphor-fg: #ffffff;
+  --phosphor-fg-dim: #888888;
+  --phosphor-border: rgba(255, 255, 255, 0.15);
+
+  --background: #121212;
+  --foreground: #ffffff;
+  --font-inter: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-fraunces: var(--font-fraunces), Georgia, serif;
+  --font-jetbrains-mono: var(--font-jetbrains-mono), monospace;
+
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-voice: var(--font-fraunces);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  min-height: 100vh;
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Typography Utilities */
+.font-serif {
+  font-family: var(--font-voice);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+/* -------------------------------------------------------------
+ * HERO MUSEUM POSTER FRAME (SVG OVERLAY APPROACH)
+ * ------------------------------------------------------------- */
+/* -------------------------------------------------------------
+ * FULL-BLEED MONOCHROME SCROLLYTELLING VIEWPORT SYSTEM
+ * ------------------------------------------------------------- */
+.scrolly-root {
+  position: relative;
+  width: 100%;
+  height: 320vh; /* headroom for scrolly scrolling */
+  background-color: #000000; /* Absolute black matching ticket theme */
+}
+
+.scrolly-viewport {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.scrolly-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  opacity: 0.95;
+}
+
+.vertical-side-label {
+  position: absolute;
+  left: 30px;
+  bottom: 40px;
+  transform: rotate(-90deg);
+  transform-origin: left bottom;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  opacity: 0.2;
+  color: #ffffff;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+/* Phase 1: Intro name/title settled on the right side - Shifted further right to 45vw */
+.intro-pane {
+  position: absolute;
+  top: 50%;
+  left: 45vw; /* Shifted rightward to not overlap dense left pixels */
+  width: 48vw;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: #ffffff;
+  /* Animates sliding from the left pixels into the right side on load */
+  animation: slideInFromLeft 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.intro-badge {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  opacity: 0.5;
+  text-transform: uppercase;
+}
+
+.intro-name {
+  font-size: clamp(3.5rem, 8.5vw, 8rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.intro-title {
+  font-size: clamp(1rem, 2.2vw, 1.45rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  opacity: 0.85;
+}
+
+.intro-matrix {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  opacity: 0.45;
+  margin-top: 14px;
+}
+
+.intro-matrix-bar {
+  font-size: 7.5px;
+  letter-spacing: 1.5px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Phase 2: Overlapping Projects stack - Centered horizontally and vertically */
+.projects-pane {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Centered horizontally and vertically */
+  width: 90vw;
+  max-width: 1200px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition:
+    opacity 0.35s ease,
+    transform 0.45s ease;
+}
+
+/* Phase 3: Kaggle Stats card - Centered horizontally and vertically */
+.kaggle-pane {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Centered horizontally and vertically */
+  width: 90vw;
+  max-width: 600px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition:
+    opacity 0.35s ease,
+    transform 0.45s ease;
+}
+
+.pane-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pane-tag {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  opacity: 0.5;
+}
+
+.pane-title {
+  font-size: clamp(1.8rem, 3.2vw, 2.4rem);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.kaggle-footer-details {
+  display: flex;
+  justify-content: space-between;
+  opacity: 0.25;
+  margin-top: 4px;
+}
+
+.scrolly-indicator {
+  position: absolute;
+  bottom: 40px;
+  left: 42vw;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  opacity: 0.4;
+  animation: pulseScroll 2s infinite ease-in-out;
+}
+
+.scrolly-arrow {
+  font-size: 14px;
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-35vw); /* Slide in from left pixel dither area */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0); /* Settle at coordinates on right side */
+  }
+}
+
+@keyframes pulseScroll {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 0.6;
+  }
+}
+
+/* ===== TOP PANEL TEXT OVERLAY ===== */
+.frame-top-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 14.5%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  padding: 1.8% 4% 0;
+  pointer-events: none;
+  color: #11110f;
+}
+
+.ftop-row1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: clamp(0.45rem, 0.8vw, 0.65rem);
+  letter-spacing: 0.06em;
+}
+
+.ftop-left,
+.ftop-right {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ftop-right {
+  text-align: right;
+}
+
+.ftop-bold {
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.ftop-dim {
+  opacity: 0.65;
+  font-weight: 600;
+}
+
+.ftop-arrow {
+  font-size: clamp(0.5rem, 0.9vw, 0.75rem);
+  opacity: 0.75;
+}
+
+.ftop-row2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5%;
+}
+
+.ftop-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: clamp(0.55rem, 0.9vw, 0.75rem);
+  font-weight: 700;
+}
+
+.ftop-sigil {
+  font-size: 1.1em;
+}
+
+.ftop-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.ftop-r {
+  font-size: 0.5em;
+  vertical-align: super;
+}
+
+.ftop-row3 {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1%;
+  padding: 0 18%;
+}
+
+.ftop-checker {
+  font-size: clamp(0.4rem, 0.6vw, 0.55rem);
+  letter-spacing: 1px;
+  opacity: 0.65;
+}
+
+/* ===== BOTTOM PANEL TEXT OVERLAY ===== */
+.frame-bottom-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 16%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4%;
+  padding: 0 5%;
+  pointer-events: none;
+  color: #11110f;
+}
+
+.fbot-label {
+  font-size: clamp(0.5rem, 0.75vw, 0.65rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  opacity: 0.7;
+}
+
+.fbot-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.fbot-meta-left,
+.fbot-meta-right {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: clamp(0.5rem, 0.75vw, 0.65rem);
+}
+
+.fbot-num {
+  font-weight: 800;
+}
+
+.fbot-dim {
+  opacity: 0.55;
+  font-weight: 600;
+}
+
+.fbot-center-name {
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #11110f;
+  line-height: 1;
+}
+
+.fbot-star {
+  margin: 0 10px;
+  font-size: 0.6em;
+  opacity: 0.55;
+  vertical-align: middle;
+}
+
+.fbot-subtitle {
+  font-size: clamp(0.5rem, 0.85vw, 0.7rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+}
+
+.fbot-footer {
+  display: flex;
+  justify-content: space-between;
+  width: 50%;
+  font-size: clamp(0.4rem, 0.6vw, 0.55rem);
+  opacity: 0.45;
+  margin-top: 0.5%;
+}
+
+/* ===== SIDE STAR DECORATIONS ===== */
+.frame-side-star {
+  position: absolute;
+  z-index: 2;
+  font-size: clamp(1rem, 1.8vw, 1.4rem);
+  color: #11110f;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.frame-side-star-l {
+  left: 3%;
+  bottom: 15%;
+}
+
+.frame-side-star-r {
+  right: 3%;
+  bottom: 15%;
+}
+
+@media (max-width: 640px) {
+  .hero-frame-container {
+    aspect-ratio: 940 / 1000;
+    /* Slightly taller on mobile to prevent text overlap */
+  }
+
+  .fbot-center-name {
+    font-size: 1.8rem;
+  }
+
+  .ftop-brand {
+    font-size: 1.1rem;
+  }
+}
+
+/* Helpers for monochrome poster */
+.text-white-mono {
+  color: #ffffff !important;
+}
+.text-white-mono .ftop-dim,
+.text-white-mono .fbot-dim {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+.text-white-dim {
+  color: #ffffff !important;
+  opacity: 0.35 !important;
+}
+
+/* ===== FLOATING DITHER CORE STATUS CARD ===== */
+.hero-status-card-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  width: 82%;
+  max-width: 440px;
+  pointer-events: auto; /* Allow button click through overlay */
+}
+
+.dither-status-card {
+  background-color: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: #ffffff;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dither-status-card:hover {
+  transform: scale(1.02);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.card-glitch-header {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+  padding-bottom: 8px;
+}
+
+.card-row1 {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  opacity: 0.75;
+}
+
+.card-matrix-bar {
+  font-size: 7px;
+  letter-spacing: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+  color: #ffffff;
+  user-select: none;
+  opacity: 0.85;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  gap: 16px;
+}
+
+.card-footer-text {
+  font-size: 8.5px;
+  line-height: 1.4;
+  opacity: 0.45;
+  letter-spacing: 0.05em;
+}
+
+.card-pill-button {
+  background-color: #ffffff;
+  color: #000000 !important;
+  border-radius: 9999px;
+  padding: 8px 18px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-align: center;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid #ffffff;
+}
+
+.card-pill-button:hover {
+  background-color: #000000;
+  color: #ffffff !important;
+  border-color: #ffffff;
+}
+
+/* Vertical Side Label rotated 90 deg */
+.vertical-side-label {
+  position: absolute;
+  left: -90px;
+  bottom: 120px;
+  transform: rotate(-90deg);
+  transform-origin: left bottom;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  opacity: 0.18;
+  color: #ffffff;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Expanded Matrix progress indicator inside projects */
+.expanded-matrix-status {
+  margin: 14px 0 6px;
+  padding: 12px 16px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.matrix-status-header {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  opacity: 0.65;
+  margin-bottom: 6px;
+}
+
+.matrix-status-bar {
+  font-size: 6.5px;
+  letter-spacing: 0.8px;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
+/* Projects Section Styling */
+.projects-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 3rem 1.5rem;
+}
+
+.section-header {
+  margin-bottom: 2.5rem;
+}
+
+.section-tag {
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 0.5rem;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+/* -------------------------------------------------------------
+ * PREMIUM ACCORDION OVERLAPPING DECK
+ * ------------------------------------------------------------- */
+.folder-deck-container {
+  width: 100%;
+  margin-top: 2rem;
+  overflow: visible;
+  position: relative;
+}
+
+.folder-deck {
+  display: flex;
+  flex-direction: row;
+  height: min(64vh, 600px); /* Dynamically scales card height to prevent vertical clipping */
+  width: 100%;
+  position: relative;
+  align-items: stretch;
+  gap: 0;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.folder-card {
+  position: relative;
+  border-radius: 12px;
+  box-shadow:
+    -10px 0 25px rgba(0, 0, 0, 0.4),
+    0 10px 30px rgba(0, 0, 0, 0.35),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  /* Card overlap setup */
+  margin-left: -5%;
+
+  /* Entrance defaults (Out of left pixels, transparent) */
+  transform: translateX(-40vw);
+  opacity: 0;
+
+  /* Split transition: 0.8s for transform/opacity, 0.5s for flex/margin spacing, 0.3s for hover color */
+  transition:
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.8s ease,
+    flex 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    margin 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.3s ease;
+}
+
+/* Settle cards in place when parent projects pane becomes active */
+.projects-pane.pane-active .folder-card {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Staggered entrance delays (delays only apply to transform & opacity, zero delay for flex & margin spacing clicks) */
+.projects-pane.pane-active .folder-card:nth-child(1) {
+  transition-delay: 0.05s, 0.05s, 0s, 0s;
+}
+.projects-pane.pane-active .folder-card:nth-child(2) {
+  transition-delay: 0.18s, 0.18s, 0s, 0s;
+}
+.projects-pane.pane-active .folder-card:nth-child(3) {
+  transition-delay: 0.31s, 0.31s, 0s, 0s;
+}
+.projects-pane.pane-active .folder-card:nth-child(4) {
+  transition-delay: 0.44s, 0.44s, 0s, 0s;
+}
+.projects-pane.pane-active .folder-card:nth-child(5) {
+  transition-delay: 0.57s, 0.57s, 0s, 0s;
+}
+
+.folder-card:first-child {
+  margin-left: 0;
+}
+
+/* Base sizing behaviors */
+.folder-card.is-collapsed {
+  flex: 1;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.folder-card.is-collapsed:hover {
+  transform: translateY(-8px);
+  z-index: 12 !important;
+}
+
+.folder-card.is-active {
+  flex: 5.5;
+  cursor: default;
+  margin-left: 0;
+  margin-right: 0;
+  z-index: 15 !important;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.65),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Accordion shifting side effects */
+.folder-deck.has-active .folder-card.is-collapsed {
+  flex: 0.4;
+  min-width: 60px;
+  opacity: 0.65;
+  filter: grayscale(0.2) contrast(0.9);
+  margin-left: -4%;
+}
+
+.folder-deck.has-active .folder-card.is-collapsed:hover {
+  opacity: 1;
+  filter: none;
+  min-width: 80px;
+}
+
+/* -------------------------------------------------------------
+ * OPENAI EMERGENCE TICKET STENCIL ACCORDION & SPINES
+ * ------------------------------------------------------------- */
+.folder-tab-header {
+  position: absolute;
+  top: -30px;
+  left: 20px;
+  height: 31px;
+  padding: 0 16px;
+  border-radius: 8px 8px 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  z-index: 11;
+  user-select: none;
+  text-transform: uppercase;
+}
+
+.tab-code {
+  opacity: 0.45;
+}
+
+.tab-divider {
+  opacity: 0.3;
+}
+
+/* Spine view in collapsed ticket state */
+.folder-spine-view {
+  padding: 24px 16px 20px;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  user-select: none;
+  cursor: pointer;
+}
+
+.spine-meta {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 9px;
+  font-weight: 700;
+  opacity: 0.55;
+  border-bottom: 1px solid currentColor; /* Adapt to text color of card */
+  padding-bottom: 8px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.spine-art-canvas {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 16px 0;
+  opacity: 0.8;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.spine-svg-art {
+  width: clamp(55px, 8.5vw, 75px);
+  height: clamp(55px, 8.5vw, 75px);
+  color: inherit;
+  opacity: 0.85;
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease;
+}
+
+.folder-card:hover .spine-svg-art {
+  transform: scale(1.08) rotate(3deg);
+  opacity: 1;
+}
+
+.folder-card:hover .spine-art-canvas {
+  opacity: 1;
+}
+
+.spine-title-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: auto;
+}
+
+.spine-large-title {
+  font-size: clamp(1.3rem, 2vw, 1.7rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.spine-project-subtitle {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  opacity: 0.45;
+  text-transform: uppercase;
+}
+
+.spine-barcode {
+  font-size: 10px;
+  letter-spacing: 1px;
+  opacity: 0.35;
+  margin-top: 14px;
+  margin-bottom: 8px;
+  user-select: none;
+}
+
+.spine-action {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  opacity: 0.45;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+  padding-top: 8px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Expanded state Emergence ticket layout */
+.folder-expanded-content {
+  padding: 30px 34px;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.expanded-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 12px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.expanded-file-badge {
+  opacity: 0.5;
+  letter-spacing: 0.06em;
+}
+
+.expanded-close-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.05em;
+}
+
+.expanded-close-btn:hover {
+  background: #ffffff;
+  color: #000000 !important;
+  border-color: #ffffff;
+}
+
+/* Ticket Columns grid */
+.ticket-body-layout {
+  display: flex;
+  gap: 36px;
+  align-items: stretch;
+}
+
+.ticket-text-side {
+  flex: 1.3;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ticket-art-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-left: 1px dashed rgba(255, 255, 255, 0.12);
+  padding-left: 28px;
+  justify-content: space-between;
+}
+
+.ticket-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+}
+
+.ticket-eng-team {
+  opacity: 0.55;
+}
+
+.ticket-name {
+  font-size: clamp(2rem, 3.8vw, 3.4rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  margin: 4px 0;
+  text-transform: uppercase;
+}
+
+.ticket-est {
+  opacity: 0.45;
+}
+
+.ticket-meta-block {
+  border-top: 1px dashed rgba(255, 255, 255, 0.15);
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+  padding: 10px 0;
+  margin: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.meta-val {
+  font-weight: 700;
+}
+
+.ticket-desc {
+  font-size: 10px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.desc-header {
+  font-weight: 800;
+  opacity: 0.45;
+  margin-bottom: 6px;
+}
+
+.ticket-specs-block {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: auto;
+}
+
+.doc-metric-card {
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 9.5px;
+  line-height: 1.45;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  letter-spacing: 0.05em;
+}
+
+.metric-tag {
+  font-weight: 800;
+  opacity: 0.5;
+}
+
+.tech-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tech-tag-pill {
+  background-color: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 9999px;
+  padding: 3px 10px;
+  font-size: 8.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ASCII Wireframe and Circle Box */
+.ticket-ascii-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.6 / 1; /* landscape box matching reference */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #060606;
+}
+
+.wireframe-line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 130%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.wireframe-line.angle-1 {
+  transform: translate(-50%, -50%) rotate(25deg);
+}
+
+.wireframe-line.angle-2 {
+  transform: translate(-50%, -50%) rotate(-35deg);
+}
+
+.ascii-circle-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(85%, 190px);
+  height: min(85%, 190px);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background-color: #000000;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.95);
+}
+
+.ascii-art {
+  font-size: 7px;
+  line-height: 1.1;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  user-select: none;
+}
+
+.ticket-challenge-box {
+  font-size: 9px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.challenge-lbl {
+  font-weight: 800;
+  opacity: 0.45;
+}
+
+/* Ticket Footer Barcode & Seals */
+.ticket-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+  padding-top: 14px;
+}
+
+.barcode-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.barcode-bars {
+  font-size: clamp(10px, 1.4vw, 13px);
+  letter-spacing: 0.5px;
+  line-height: 1;
+  opacity: 0.65;
+  user-select: none;
+}
+
+.barcode-numbers {
+  font-size: 7.5px;
+  letter-spacing: 1.5px;
+  opacity: 0.35;
+}
+
+.ticket-seals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 8.5px;
+}
+
+.seal-star {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.seal-tag {
+  opacity: 0.35;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Kaggle Section Styles */
+.kaggle-section {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 6rem 1.5rem;
+}
+
+.kaggle-card {
+  background: rgba(255, 201, 74, 0.02);
+  border: 1px solid rgba(255, 201, 74, 0.2);
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.kaggle-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.kaggle-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.badge-expert {
+  background: rgba(255, 201, 74, 0.15);
+  color: #ffc94a;
+  border: 1px solid rgba(255, 201, 74, 0.4);
+  padding: 0.35rem 0.85rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.badge-rank {
+  background: rgba(255, 201, 74, 0.08);
+  color: rgba(255, 201, 74, 0.85);
+  border: 1px solid rgba(255, 201, 74, 0.25);
+  padding: 0.35rem 0.85rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.kaggle-profile-link {
+  color: #ffc94a;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  transition: opacity 0.2s ease;
+}
+
+.kaggle-profile-link:hover {
+  opacity: 0.8;
+}
+
+.kaggle-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.stat-box {
+  background: rgba(6, 6, 4, 0.6);
+  border: 1px solid rgba(255, 201, 74, 0.15);
+  border-radius: 8px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: rgba(255, 201, 74, 0.45);
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffc94a;
+}
+
+.stat-sub {
+  font-size: 0.8rem;
+  color: rgba(255, 201, 74, 0.6);
+}
+
+.medals-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.medal {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(255, 201, 74, 0.05);
+  border: 1px solid rgba(255, 201, 74, 0.15);
+  color: rgba(255, 201, 74, 0.9);
+}
+
+.medal-icon {
+  margin-right: 0.2rem;
+}
+
+/* Mobile Responsiveness for Folder Accordion Deck */
+@media (max-width: 900px) {
+  .folder-deck {
+    flex-direction: column;
+    min-height: auto;
+    gap: 2rem;
+  }
+
+  .folder-card {
+    margin-left: 0 !important;
+    min-height: 480px;
+    width: 100% !important;
+    opacity: 1 !important;
+    filter: none !important;
+  }
+
+  .folder-card.is-collapsed {
+    min-width: 100%;
+  }
+
+  .folder-deck.has-active .folder-card.is-collapsed {
+    display: none; /* Hide closed ones on mobile to focus on expanded */
+  }
+
+  .folder-card.is-active {
+    min-height: auto;
+  }
+
+  .folder-tab-header {
+    top: -24px;
+    left: 15px;
+    height: 25px;
+    padding: 0 10px;
+    font-size: 9px;
+  }
+}
