@@ -1,36 +1,60 @@
 /**
  * @file NeuralFlowBackground.tsx
- * @description Generates a dynamic dithered digital sand/flow network of pixelated squares that shakes and flashes on scroll
+ * @description Laminar drift vector field particle flow canvas engine matching mockup_laminar_drift.html specifications
  * @module components/NeuralFlowBackground
  */
 
 "use client";
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 
 type NeuralFlowBackgroundProps = {
-  particleCount?: number;
   seed?: number;
-  color?: string; // RGB string, e.g. "255, 255, 255"
+  color?: string;
   backgroundColor?: string;
-  className?: string;
   isScrolling?: boolean;
+  activeProjectCode?: string;
 };
 
+// PRNG Mulberry32 Generator
+function mulberry32(a: number) {
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Color interpolation function
+function lerpColor(c1: number[], c2: number[], t: number) {
+  const r = Math.round(c1[0] + (c2[0] - c1[0]) * t);
+  const g = Math.round(c1[1] + (c2[1] - c1[1]) * t);
+  const b = Math.round(c1[2] + (c2[2] - c1[2]) * t);
+  return `rgba(${r},${g},${b},0.55)`;
+}
+
+const cool = [62, 111, 224]; // Cool Blue
+const warm = [226, 84, 59]; // Warm Amber/Coral
+
 export default function NeuralFlowBackground({
-  seed = 42,
-  color = "240, 240, 240",
-  backgroundColor = "#121212",
-  className,
+  seed = 1147,
+  backgroundColor = "#0E1420",
   isScrolling = false,
+  activeProjectCode = "001",
 }: NeuralFlowBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const isScrollingRef = useRef(false);
+  const mouseRef = useRef({ x: -1000, y: -1000, targetX: -1000, targetY: -1000 });
 
-  // Keep ref up to date so animation loop reads the latest scroll status without restarting
   useEffect(() => {
-    isScrollingRef.current = isScrolling;
-  }, [isScrolling]);
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseRef.current.targetX = e.clientX;
+      mouseRef.current.targetY = e.clientY;
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -38,165 +62,131 @@ export default function NeuralFlowBackground({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animationId = 0;
-    let cw = 0;
-    let ch = 0;
-    let time = 0;
+    let animationFrameId: number;
+    let width = 0;
+    let height = 0;
 
-    // Simple mulberry32 generator
-    function mulberry32(a: number) {
-      return function () {
-        a |= 0;
-        a = (a + 0x6d2b79f5) | 0;
-        let t = Math.imul(a ^ (a >>> 15), 1 | a);
-        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-      };
-    }
-    const rand = mulberry32(seed);
-
-    // Initialize grid block array
-    let blocks: {
-      gridX: number;
-      gridY: number;
-      size: number;
-      baseAlpha: number;
-      phase: number;
-      speed: number;
-    }[] = [];
-
-    const gridSize = 12; // size of each pixel square block
-
-    function layout() {
-      const rect = canvas!.getBoundingClientRect();
-      cw = rect.width;
-      ch = rect.height;
+    const resize = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
       const dpr = window.devicePixelRatio || 1;
-      canvas!.width = cw * dpr;
-      canvas!.height = ch * dpr;
-      ctx!.setTransform(1, 0, 0, 1, 0, 0);
-      ctx!.scale(dpr, dpr);
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+    };
 
-      blocks = [];
-      const cols = Math.ceil(cw / gridSize);
-      const rows = Math.ceil(ch / gridSize);
+    resize();
+    window.addEventListener("resize", resize);
 
-      for (let x = 0; x < cols; x++) {
-        for (let y = 0; y < rows; y++) {
-          const xRatio = x / cols;
-          const yRatio = y / rows;
+    // Initialize PRNG & Particles based on seed
+    let rand = mulberry32(seed);
+    const COUNT = Math.min(320, Math.floor((width * height) / 4500));
+    let particles: { x: number; y: number; life: number }[] = [];
 
-          const boundary = 0.35 + 0.15 * Math.sin(yRatio * Math.PI * 2.5 + xRatio * Math.PI);
-          const distToBoundary = xRatio - boundary;
+    const initParticles = () => {
+      rand = mulberry32(seed);
+      particles = [];
+      for (let i = 0; i < COUNT; i++) {
+        particles.push({
+          x: rand() * width,
+          y: rand() * height,
+          life: rand() * 200,
+        });
+      }
+    };
 
-          let prob = 0;
-          if (distToBoundary < 0) {
-            prob = Math.pow(Math.abs(distToBoundary) / boundary, 0.6) * 0.92;
-          } else {
-            prob = Math.max(0, 0.05 - 0.05 * (distToBoundary / (1 - boundary)));
-          }
+    initParticles();
 
-          const checkPattern = (x + y) % 2 === 0 ? 0.95 : 0.65;
-          const finalProb = prob * checkPattern;
+    // Vector field angle calculation matching laminar drift math
+    const angleAt = (x: number, y: number, t: number) => {
+      return (
+        Math.sin(x * 0.012 + t * 0.25) +
+        Math.cos(y * 0.015 - t * 0.18) +
+        Math.sin((x + y) * 0.006 + t * 0.1)
+      );
+    };
 
-          if (rand() < finalProb) {
-            let size = gridSize - 2;
-            if (Math.abs(distToBoundary) < 0.12 && rand() < 0.6) {
-              size = Math.floor(gridSize / 2) - 1;
-            }
+    let t = 0;
 
-            blocks.push({
-              gridX: x * gridSize,
-              gridY: y * gridSize,
-              size,
-              baseAlpha: 0.15 + rand() * 0.75,
-              phase: rand() * Math.PI * 2,
-              speed: 0.015 + rand() * 0.02,
-            });
-          }
+    // Initial background fill
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, width, height);
+
+    const render = () => {
+      t += 0.012;
+
+      // Mouse position smooth lerp
+      mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.08;
+      mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * 0.08;
+
+      // Semi-transparent background trail fill
+      ctx.fillStyle = "rgba(14, 20, 32, 0.08)";
+      ctx.fillRect(0, 0, width, height);
+
+      // Micro-shake on scroll
+      const shakeX = isScrolling ? (Math.random() - 0.5) * 3 : 0;
+      const shakeY = isScrolling ? (Math.random() - 0.5) * 3 : 0;
+
+      ctx.save();
+      ctx.translate(shakeX, shakeY);
+
+      // Render Laminar Drift particles
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        let a = angleAt(p.x, p.y, t * 50);
+
+        // Mouse influence curve
+        const distToMouse = Math.hypot(p.x - mouseRef.current.x, p.y - mouseRef.current.y);
+        if (distToMouse < 180) {
+          const force = (180 - distToMouse) / 180;
+          a += force * 0.8;
+        }
+
+        const nx = p.x + Math.cos(a * 2) * 1.6;
+        const ny = p.y + Math.sin(a * 2) * 1.6;
+        const speed = Math.abs(a) / 3;
+
+        ctx.strokeStyle = lerpColor(cool, warm, Math.min(speed, 1));
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(nx, ny);
+        ctx.stroke();
+
+        p.x = nx;
+        p.y = ny;
+        p.life -= 1;
+
+        // Reset particle if out of bounds or life expired
+        if (p.life <= 0 || p.x < 0 || p.x > width || p.y < 0 || p.y > height) {
+          p.x = rand() * width;
+          p.y = rand() * height;
+          p.life = 100 + rand() * 150;
         }
       }
-    }
 
-    layout();
+      ctx.restore();
+      animationFrameId = requestAnimationFrame(render);
+    };
 
-    const reduceMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    function drawStatic() {
-      ctx!.fillStyle = backgroundColor;
-      ctx!.fillRect(0, 0, cw, ch);
-
-      blocks.forEach((b) => {
-        ctx!.fillStyle = `rgba(${color}, ${b.baseAlpha})`;
-        ctx!.fillRect(b.gridX, b.gridY, b.size, b.size);
-      });
-    }
-
-    function drawFrame() {
-      ctx!.fillStyle = backgroundColor;
-      ctx!.fillRect(0, 0, cw, ch);
-
-      time += 0.025;
-      const scrolling = isScrollingRef.current;
-
-      blocks.forEach((b) => {
-        let dynamicAlpha = Math.max(
-          0.06,
-          Math.min(0.95, b.baseAlpha + 0.18 * Math.sin(time + b.phase))
-        );
-
-        let wobbleX =
-          Math.abs(b.gridX - cw * 0.3) < 150 ? Math.sin(time * b.speed + b.phase) * 0.5 : 0;
-        let wobbleY =
-          Math.abs(b.gridY - ch * 0.5) < 150 ? Math.cos(time * b.speed + b.phase) * 0.5 : 0;
-
-        // Reactive Scroll Jitter (shake) and Flashing
-        if (scrolling) {
-          // Fast pseudo-random high frequency shake (Jitter) - Reduced sensitivity from 2.4 to 1.1
-          const shakeFactor = 1.1;
-          wobbleX += Math.sin(time * 24 + b.gridX * 0.15) * shakeFactor;
-          wobbleY += Math.cos(time * 24 + b.gridY * 0.15) * shakeFactor;
-
-          // Erratic digital flash - Reduced flashing frequency and threshold
-          const flashFreq = time * 24 + b.phase * 5;
-          if (Math.sin(flashFreq) > 0.6) {
-            // Flash color closer to white with random transparency spike
-            dynamicAlpha = 0.2 + Math.random() * 0.65;
-          }
-        }
-
-        ctx!.fillStyle = `rgba(${color}, ${dynamicAlpha})`;
-        ctx!.fillRect(b.gridX + wobbleX, b.gridY + wobbleY, b.size, b.size);
-      });
-
-      animationId = requestAnimationFrame(drawFrame);
-    }
-
-    if (reduceMotion) {
-      drawStatic();
-    } else {
-      drawFrame();
-    }
-
-    const resizeObserver = new ResizeObserver(() => {
-      layout();
-      if (reduceMotion) drawStatic();
-    });
-    resizeObserver.observe(canvas);
+    render();
 
     return () => {
-      cancelAnimationFrame(animationId);
-      resizeObserver.disconnect();
+      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(animationFrameId);
     };
-  }, [seed, color, backgroundColor]);
+  }, [seed, backgroundColor, isScrolling, activeProjectCode]);
 
   return (
     <canvas
       ref={canvasRef}
-      className={className}
-      style={{ display: "block", width: "100%", height: "100%" }}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+      }}
     />
   );
 }
